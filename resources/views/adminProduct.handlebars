@@ -1,0 +1,63 @@
+<div class="container mt-5">
+  <div class="row tm-content-row">
+
+      <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 tm-block-col">
+      <form method="post" action="/deleteSelectedProduct">
+
+        <div class="tm-bg-primary-dark tm-block tm-block-products">
+          <div class="tm-product-table-container">
+           <div style="color:white"> Total : {{product.length}} </div>
+            <table class="table table-hover tm-table-small tm-product-table">
+              <thead>
+                <tr>
+                  <th scope="col">&nbsp;</th>
+                  <th scope="col"> ID</th>
+
+                  <th scope="col"> NAME</th>
+                  <th scope="col"> SOLD</th>
+                  <th scope="col">PRICE</th>
+
+
+                  <th scope="col">&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{# each product }}
+                <tr>
+                  <th scope="row"><input type="checkbox" value="{{this._id}}" name="checkbox" /></th>
+                  <td>{{this._id}}</td>
+
+                  <td class="tm-product-name">{{this.title}}</td>
+                  <td>{{this.purchase_number}}</td>
+                  <td>{{this.price}} VND</td>
+
+
+                  <td>
+                    <a href="/deleteProduct/{{this._id}}" onclick="return confirm('Are you sure you want to delete this item?');" class="tm-product-delete-link">
+                      <i class="far fa-trash-alt tm-product-delete-icon"></i>
+                    </a>
+                      <a href="/updateProduct/?id={{this._id}}" class="tm-product-delete-link">
+                      <i class="far fa-edit tm-product-delete-icon"></i>
+                    </a>
+                  </td>
+                </tr>
+                {{/each}}
+
+
+
+
+
+              </tbody>
+            </table>
+          </div>
+          <!-- table container -->
+          <a href="http://localhost:3000/createNewProduct" class="btn btn-primary btn-block text-uppercase mb-3">Add new
+            product</a>
+          <button type="submit" onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-primary btn-block text-uppercase mb-3">Delete selected product</button>
+
+        </div>
+      </form>
+      </div>
+    
+  </div>
+</div>
