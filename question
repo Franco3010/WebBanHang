@@ -1,0 +1,43 @@
+Retrieve all documents from the collection.
+Retrieve the document with the _id value of 3.
+Retrieve all documents where the country is "USA".
+Retrieve all documents where the age is greater than 30.
+Retrieve the documents where the profession is "Engineer" or "Doctor".
+Retrieve all documents sorted by salary in ascending order.
+Retrieve the documents where the name starts with the letter "E".
+Retrieve the documents where the age is between 25 and 35.
+Retrieve the documents where the country is not "USA".
+Retrieve the documents where the profession is not "Teacher" or "Software Developer".
+Retrieve the documents sorted by age in descending order.
+Retrieve the documents where the salary is greater than or equal to 6000.
+Retrieve the documents where the name ends with the letter "a".
+Retrieve the documents where the country is "USA" and the age is less than 30.
+Retrieve the documents where the profession contains the word "eveloper".
+Retrieve the documents where the age is not equal to 28.
+Retrieve the documents where the salary is between 5000 and 8000.
+Retrieve the documents where the profession is "Engineer" and the country is "USA".
+Retrieve the documents where the name is alphabetically between "John" and "Sarah".
+Retrieve the documents where the profession is "Doctor" or "Lawyer" and the salary is greater than 6000.
+Retrieve the documents where the age is greater than the average age.
+Retrieve the documents where the profession starts with the letter "A" or ends with the letter "r".
+Retrieve the documents where the name contains the letter "m" and the age is less than 30.
+Retrieve the documents where the profession is "Teacher" or "Architect" and the salary is less than 6000.
+Retrieve the documents where the age is not in [25, 29, 32].
+Retrieve the documents where the country is not "USA" and the profession is not "Engineer".
+Retrieve the documents where the name is in alphabetical order.
+Retrieve the documents where the age is the maximum age.
+Retrieve the documents where the salary is the minimum salary.
+Retrieve the documents where the name starts with "D" and ends with "l".
+
+
+Retrieve the documents with the name "John" and project only the name and age fields.
+Retrieve the documents where the age is greater than 30, sort them by salary in descending order, and limit the result to 3 documents.
+Retrieve the documents where the profession is either "Doctor" or "Lawyer" and group them by country, calculating the average salary for each country.
+Retrieve the documents where the country is not "USA" and project the name and profession fields.
+Retrieve the documents where the age is less than or equal to 30 and sort them by age in ascending order, then by salary in descending order.
+Retrieve the documents where the profession starts with the letter "E" and calculate the total salary for all matching documents.
+Retrieve the documents where the name ends with the letter "a" and project the name and country fields.
+Retrieve the documents where the age is greater than the average age, and group them by country, calculating the maximum salary for each country.
+Retrieve the documents where the salary is within a specific range (e.g., between 5000 and 8000) and group them by profession, calculating the average age for each profession.
+Retrieve the documents where the name starts with the letter "M" and project the name field, replacing it with a new field called "FullName" that concatenates "Mr." before the name.
+Please note that these are the question prompts, and you can implement the corresponding SELECT queries based on these questions using the MongoDB query syntax.

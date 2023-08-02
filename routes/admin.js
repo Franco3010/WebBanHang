@@ -11,7 +11,7 @@ const mongo = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017'
 const { body, validationResult } = require('express-validator');
 const { isnotAuth } = require('./authMiddleware');
-const Cart = require('/ProjTN/src/model/cart')
+const Cart = require('../model/cart')
 const express = require('express')
 const app = express()
 const paypal = require('paypal-rest-sdk');
@@ -23,15 +23,15 @@ const User = connection.models.User;
 const mongoose = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/shopping')
 mongoose.connect('mongodb://localhost:27017/Newtest')
-const Product = require('/ProjTN/src/model/product.js');
-const Comment = require('/ProjTN/src/model/comments.js');
+const Product = require('../model/product.js');
+const Comment = require('../model/comments.js');
 const validPassword = require('../lib/passwordUtils').validPassword;
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'C:/ProjTN/src/resources/images')
+        cb(null, '../resources/images')
     },
     filename: function (req, file, cb) {
 

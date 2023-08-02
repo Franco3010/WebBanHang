@@ -13,6 +13,8 @@ const flash = require('connect-flash');
 var validator = require('express-validator');
 const {body} = require('express-validator')
 const MongoStore = require('connect-mongo');
+const bodyParser = require('body-parser');
+
 /**
  * -------------- GENERAL SETUP ----------------
  */
@@ -51,6 +53,7 @@ app.use(flash());
  * -------------- SESSION SETUP ----------------
  */
 
+// app.use(bodyParser.json());
 
 app.use(session({
     secret: 'hello',

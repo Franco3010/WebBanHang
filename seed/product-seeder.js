@@ -1,4 +1,5 @@
-var Product = require('/ProjTN/src/model/product.js');
+
+var Product = require('../model/product.js');
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/Newtest');

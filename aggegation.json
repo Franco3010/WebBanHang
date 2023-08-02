@@ -1,0 +1,50 @@
+[
+    {
+        "_id": 1,
+        "name": "John",
+        "age": 25,
+        "country": "USA",
+        "profession": "Engineer",
+        "salary": 5000
+    },
+    {
+        "_id": 2,
+        "name": "Sarah",
+        "age": 32,
+        "country": "Canada",
+        "profession": "Doctor",
+        "salary": 8000
+    },
+    {
+        "_id": 3,
+        "name": "Emily",
+        "age": 28,
+        "country": "Australia",
+        "profession": "Teacher",
+        "salary": 4000
+    },
+    {
+        "_id": 4,
+        "name": "Michael",
+        "age": 40,
+        "country": "USA",
+        "profession": "Lawyer",
+        "salary": 10000
+    },
+    {
+        "_id": 5,
+        "name": "Emma",
+        "age": 29,
+        "country": "UK",
+        "profession": "Software Developer",
+        "salary": 6000
+    },
+    {
+        "_id": 6,
+        "name": "Daniel",
+        "age": 35,
+        "country": "Germany",
+        "profession": "Architect",
+        "salary": 7000
+    }
+]

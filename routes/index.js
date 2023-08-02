@@ -13,7 +13,7 @@ const mongo = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017'
 const { body, validationResult } = require('express-validator');
 const { isnotAuth } = require('./authMiddleware');
-const Cart = require('/ProjTN/src/model/cart')
+const Cart = require('../model/cart')
 const express = require('express')
 const app = express()
 const paypal = require('paypal-rest-sdk');
@@ -24,24 +24,37 @@ const nodemailer = require('nodemailer')
 const mongoose = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/shopping')
 mongoose.connect('mongodb://localhost:27017/Newtest')
-const Product = require('/ProjTN/src/model/product.js');
+const Product = require('../model/product.js');
+const { MongoClient } = require('mongodb');
+const uri = 'mongodb://localhost:27017/Newtest'; // Replace with your MongoDB connection URI
+const client = new MongoClient(uri);
+const bodyParser = require('body-parser');
 
+app.use(bodyParser.json());
+
+client.connect()
+    .then(() => {
+        console.log('Connected to MongoDB');
+    })
+    .catch(err => {
+        console.error('Error connecting to MongoDB:', err);
+    });
 /**
 * -------------- POST ROUTES ----------------
 */
 var cart = new Cart({});
 let productDetail = {}
-let idProduct 
-let sum = 0 
+let idProduct
+let sum = 0
 
 
 
 paypal.configure({
-  'mode': 'sandbox', //sandbox or live
-  'client_id': 'AYDRzGlfFxq61ntD0MuERaA631GRko2x0OoeDQFcgJSIxZ8_evkel7vQ_ABiwpt-hKUhIZZPhJiiwCtz',
-  'client_secret': 'EE8MCC0_k-8UuckvKbQOVNRRsywfA7v-JuDh1pCAEnnmCFjkFYQkgXwECcyfMOhAaoNLJnDDKKTAzytc'
+    'mode': 'sandbox', //sandbox or live
+    'client_id': 'AYDRzGlfFxq61ntD0MuERaA631GRko2x0OoeDQFcgJSIxZ8_evkel7vQ_ABiwpt-hKUhIZZPhJiiwCtz',
+    'client_secret': 'EE8MCC0_k-8UuckvKbQOVNRRsywfA7v-JuDh1pCAEnnmCFjkFYQkgXwECcyfMOhAaoNLJnDDKKTAzytc'
 });
-function sendMail(email,link){
+function sendMail(email, link) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -49,15 +62,15 @@ function sendMail(email,link){
             pass: 'jbnpjpfvqowjbjmd'
         }
     });
-    
+
     let mailOptions = {
-        from: 'ngodu.anh3010@gmail.com', 
+        from: 'ngodu.anh3010@gmail.com',
         to: email,
         subject: 'Nodemailer - Test',
         text: link,
-        
+
     };
-    
+
     transporter.sendMail(mailOptions, (err, data) => {
         if (err) {
             return console.log(err);
@@ -66,6 +79,7 @@ function sendMail(email,link){
     });
 }
 router.post('/login', passport.authenticate('localuser', { failureRedirect: '/login', successRedirect: 'home' }), (req, res) => {
+    console.log(`login success user ${req.user}`)
 });
 
 router.post('/register',
@@ -102,8 +116,8 @@ router.post('/register',
                         hash: hash,
                         salt: salt,
                         admin: true,
-                        address:'',
-                        phoneNumber:''
+                        address: '',
+                        phoneNumber: ''
                     });
 
                     newUser.save()
@@ -136,7 +150,7 @@ router.get('/', (req, res, next) => {
 router.get('/login', (req, res, next) => {
     var messages = req.flash('error');
     var successMessages = req.flash('Change password success')
-    res.render('login', { messages: messages, hasErrors: messages.length > 0,successMessages:successMessages,hasSuccess:successMessages.length>0 });
+    res.render('login', { messages: messages, hasErrors: messages.length > 0, successMessages: successMessages, hasSuccess: successMessages.length > 0 });
 
 
 
@@ -144,7 +158,8 @@ router.get('/login', (req, res, next) => {
 
 // When you visit http://localhost:3000/login, you will see "Login Page"
 router.get('/home', function (req, res, next) {
-    console.log('req.user hompage',req.user)
+    console.log('req.user hompage', req.user)
+
     var successMsg = req.flash('success')[0];
     let storeDoc = []
     mongo.connect(url, (err, db) => {
@@ -153,13 +168,13 @@ router.get('/home', function (req, res, next) {
         cusor.forEach(function (doc, err) {
             storeDoc.push(doc)
         }, function () {
-            storeDoc = storeDoc.sort((a,b)=>b.purchase_number -a.purchase_number)
-            storeDoc = storeDoc.slice(0,4)
-            for(let i = 0; i< storeDoc.length;i++){
+            storeDoc = storeDoc.sort((a, b) => b.purchase_number - a.purchase_number)
+            storeDoc = storeDoc.slice(0, 4)
+            for (let i = 0; i < storeDoc.length; i++) {
                 storeDoc[i].price = storeDoc[i].price.toLocaleString()
             }
             db.close()
-            res.render('home', { products: storeDoc ,successMsg: successMsg,noMessages: !successMsg})
+            res.render('home', { products: storeDoc, successMsg: successMsg, noMessages: !successMsg })
         })
     })
 
@@ -196,7 +211,7 @@ router.get('/admin-route', isAdmin, (req, res, next) => {
 
 // Visiting this route logs the user out
 router.get('/logout', (req, res, next) => {
-  
+
     req.logout();
     req.session.cart = null
     req.session.passport = null
@@ -213,7 +228,7 @@ router.get('/login-failure', (req, res, next) => {
 
 router.get('/add-to-cart/:title', function (req, res, next) {
     if (!req.session.passport) {
-       return  res.redirect('/login');
+        return res.redirect('/login');
     }
     var productTitle = req.params.title;
     mongo.connect(url, (err, db) => {
@@ -240,224 +255,224 @@ router.get('/shopping-cart', function (req, res, next) {
         return res.redirect('/login');
     }
     if (!req.session.cart) {
-        return res.render('shopping-cart', {products: null});
+        return res.render('shopping-cart', { products: null });
     }
-    res.render('shopping-cart', {products: cart.generateArray(), totalPrice: cart.totalPrice});
+    res.render('shopping-cart', { products: cart.generateArray(), totalPrice: cart.totalPrice });
 });
-router.get('/checkout', function(req, res, next) {
+router.get('/checkout', function (req, res, next) {
     if (!req.session.cart) {
         return res.redirect('/shopping-cart');
     }
     var errMsg = req.flash('error')[0];
-    res.render('checkout', {total: cart.totalPrice, errMsg: errMsg, noError: !errMsg});
+    res.render('checkout', { total: cart.totalPrice, errMsg: errMsg, noError: !errMsg });
 });
 
 router.post('/pay', (req, res) => {
     const toUSD = 23360
     let cartModify = []
-    for(const key in cart.items){
-        const value = (cart.items[key].price/cart.items[key].qty)/toUSD
-        cartModify.push({"name":key,"price":`${Math.round(value * 10) / 10}`,"quantity":cart.items[key].qty, "currency": "USD"})
+    for (const key in cart.items) {
+        const value = (cart.items[key].price / cart.items[key].qty) / toUSD
+        cartModify.push({ "name": key, "price": `${Math.round(value * 10) / 10}`, "quantity": cart.items[key].qty, "currency": "USD" })
     }
-    cartModify.forEach(item=>{
+    cartModify.forEach(item => {
         sum = sum + item.price * item.quantity
     })
     const create_payment_json = {
-      "intent": "sale",
-      "payer": {
-          "payment_method": "paypal"
-      },
-      "redirect_urls": {
-          "return_url": "http://localhost:3000/sucess",
-          "cancel_url": "http://localhost:3000/cancel"
-      },
-      "transactions": [{
-          "item_list": {
-              "items": cartModify
-          },
-          "amount": {
-              "currency": "USD",
-              "total": `${sum}`
-          },
-          "description": "Hat for the best team ever"
-      }]
-  };
-//   console.log('transaction items ',cartModify)
-//   console.log('transaction items total',create_payment_json.transactions[0].amount)
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"
+        },
+        "redirect_urls": {
+            "return_url": "http://localhost:3000/sucess",
+            "cancel_url": "http://localhost:3000/cancel"
+        },
+        "transactions": [{
+            "item_list": {
+                "items": cartModify
+            },
+            "amount": {
+                "currency": "USD",
+                "total": `${sum}`
+            },
+            "description": "Hat for the best team ever"
+        }]
+    };
+    //   console.log('transaction items ',cartModify)
+    //   console.log('transaction items total',create_payment_json.transactions[0].amount)
 
-//   console.log('cart',cart)
-  paypal.payment.create(create_payment_json, function (error, payment) {
-    if (error) {
-        throw error;
-    } else {
-        for(let i = 0;i < payment.links.length;i++){
-          if(payment.links[i].rel === 'approval_url'){
-            res.redirect(payment.links[i].href);
-          }
+    //   console.log('cart',cart)
+    paypal.payment.create(create_payment_json, function (error, payment) {
+        if (error) {
+            throw error;
+        } else {
+            for (let i = 0; i < payment.links.length; i++) {
+                if (payment.links[i].rel === 'approval_url') {
+                    res.redirect(payment.links[i].href);
+                }
+            }
         }
-    }
-  });
+    });
 
-  
-  });
-  router.get('/sucess', (req, res) => {
+
+});
+router.get('/sucess', (req, res) => {
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
     cart.totalPrice = sum
     const execute_payment_json = {
-      "payer_id": payerId,
-      "transactions": [{
-          "amount": {
-              "currency": "USD",
-              "total": cart.totalPrice
-          }
-      }]
+        "payer_id": payerId,
+        "transactions": [{
+            "amount": {
+                "currency": "USD",
+                "total": cart.totalPrice
+            }
+        }]
     };
-  
-    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
-      if (error) {
-          console.log(error.response);
-          throw error;
-      } else {
-          const paymentInfo = payment.payer. payer_info.shipping_address
-            var order = new Order({
-            username: req.user.username,
-            cart: cart,
-            address: paymentInfo.line1+' '+ paymentInfo.city,
-            name: paymentInfo.recipient_name,
-            paymentId: paymentId,
-            status:'Đang giao',
-            arriveDate: new Date(new Date().getTime()+(7*24*60*60*1000)).toLocaleDateString("en-US")
-        });
-        order.save()
-        .then((result) => {
-            console.log('order' + result);
-        });
-        req.flash('success', 'Successfully bought product!');
-        req.session.cart = {}
-        cart = new Cart({})
-        sum = 0
-        res.redirect('/home');
-    
 
-      }
-  });
-  });
-  router.get('/findProduct/:nameProduct',function (req,res,next){
+    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+        if (error) {
+            console.log(error.response);
+            throw error;
+        } else {
+            const paymentInfo = payment.payer.payer_info.shipping_address
+            var order = new Order({
+                username: req.user.username,
+                cart: cart,
+                address: paymentInfo.line1 + ' ' + paymentInfo.city,
+                name: paymentInfo.recipient_name,
+                paymentId: paymentId,
+                status: 'Đang giao',
+                arriveDate: new Date(new Date().getTime() + (7 * 24 * 60 * 60 * 1000)).toLocaleDateString("en-US")
+            });
+            order.save()
+                .then((result) => {
+                    console.log('order' + result);
+                });
+            req.flash('success', 'Successfully bought product!');
+            req.session.cart = {}
+            cart = new Cart({})
+            sum = 0
+            res.redirect('/home');
+
+
+        }
+    });
+});
+router.get('/findProduct/:nameProduct', function (req, res, next) {
     const search = req.params.nameProduct
     const storeFind = []
     mongo.connect(url, (err, db) => {
         let dbo = db.db('shopping')
-        let cusor = dbo.collection('products').find({title: new RegExp(search, 'i')})
+        let cusor = dbo.collection('products').find({ title: new RegExp(search, 'i') })
         cusor.forEach(function (doc, err) {
             storeFind.push(doc)
-            
-        }, function(){
+
+        }, function () {
             db.close()
             return res.json(storeFind)
         }
-        
+
         )
 
     })
-   })
+})
 
-  router.get('/cancel', (req, res) => res.send('Cancelled'));
+router.get('/cancel', (req, res) => res.send('Cancelled'));
 
-  router.get('/profile',  function (req, res, next) {
+router.get('/profile', function (req, res, next) {
     if (!req.user) {
-       return res.redirect('/login');
+        return res.redirect('/login');
     }
     let totalPrice = 0
     let totalPriceInVND
-    Order.find({username: req.session.passport.user}, function(err, orders) {
+    Order.find({ username: req.session.passport.user }, function (err, orders) {
         if (err) {
             return res.write('Error!');
         }
         var cart;
-        
-        orders.forEach(function(order) {
+
+        orders.forEach(function (order) {
             cart = new Cart(order.cart);
             order.items = cart.generateArray();
             // console.log('order.items',order.items)
-            order.items.forEach(element=>{
+            order.items.forEach(element => {
                 element.price = element.price.toLocaleString()
             })
             // order.price = order.price.toLocaleString()
         });
-         orders.forEach(order=>{
+        orders.forEach(order => {
             totalPrice = totalPrice + order.cart.totalPrice
-            
-         })
-         totalPriceInVND = (totalPrice * 23360).toLocaleString()
-        res.render('profile', { orders: orders,totalPrice:totalPrice,totalPriceInVND:totalPriceInVND });
+
+        })
+        totalPriceInVND = (totalPrice * 23360).toLocaleString()
+        res.render('profile', { orders: orders, totalPrice: totalPrice, totalPriceInVND: totalPriceInVND });
     });
 });
-router.post('/comment',async (req,res)=>{
+router.post('/comment', async (req, res) => {
     const commentBody = req.body.comment
     const user = req.user
 
- 
+
 
     let newComment = {
-        detail:commentBody,
-        datePost:new Date(),
-        username:user.username,
-        userid:user._id,
-        datediff:'1 giây trước'
+        detail: commentBody,
+        datePost: new Date(),
+        username: user.username,
+        userid: user._id,
+        datediff: '1 giây trước'
 
     }
-          
-    const product = await Product.findOne({_id:idProduct})
+
+    const product = await Product.findOne({ _id: idProduct })
     product.comment.push(newComment)
     await product.save()
     productDetail.comment = product.comment
     res.redirect('/productDetail')
 })
 
-router.post('/changeProfile',(req,res)=>{
+router.post('/changeProfile', (req, res) => {
     mongo.connect(url, (err, db) => {
         let dbo = db.db('Newtest')
         var myquery = { username: req.body.username }; //req.user.username
-        var newvalues = { $set: {username: req.body.username, address: req.body.address,phoneNumber:req.body.phoneNumber } };
-       dbo.collection('users').updateOne(myquery, newvalues, function(err, res) {
-        if (err) throw err;
-        db.close();
-      });
-      
+        var newvalues = { $set: { username: req.body.username, address: req.body.address, phoneNumber: req.body.phoneNumber } };
+        dbo.collection('users').updateOne(myquery, newvalues, function (err, res) {
+            if (err) throw err;
+            db.close();
+        });
+
     })
     return res.json('success')
 })
-router.get('/productDetail/:title',async (req,res)=>{
+router.get('/productDetail/:title', async (req, res) => {
     var idParam = req.params.title
-    
- 
-
-    const product = await Product.findOne({title:idParam})
-
-            productDetail.title = product.title
-            productDetail.description = product.description
-            productDetail.totalRate = product.rateOneStar + product.rateTwoStar + product.rateThreeStar + product.rateFourStar + product.rateFiveStar
-            productDetail.purchase_number = product.purchase_number
-            productDetail.price = product.price.toLocaleString()
-            productDetail.imagePath = product.imagePath
-            productDetail.detail = product.productDetail
-            productDetail.comment = product.comment
-            idProduct = product._id
-            res.redirect('/productDetail')
-
-        
-        
-        
-
-
-        
 
 
 
-    
+    const product = await Product.findOne({ title: idParam })
 
-     
+    productDetail.title = product.title
+    productDetail.description = product.description
+    productDetail.totalRate = product.rateOneStar + product.rateTwoStar + product.rateThreeStar + product.rateFourStar + product.rateFiveStar
+    productDetail.purchase_number = product.purchase_number
+    productDetail.price = product.price.toLocaleString()
+    productDetail.imagePath = product.imagePath
+    productDetail.detail = product.productDetail
+    productDetail.comment = product.comment
+    idProduct = product._id
+    res.redirect('/productDetail')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -465,51 +480,51 @@ router.get('/productDetail/:title',async (req,res)=>{
 
 
 })
-router.get('/productDetail',async (req,res)=>{
+router.get('/productDetail', async (req, res) => {
     const second = 1000
-    const min = 60*1000
-    const hour = 3600*1000
-    const day = 3600*1000*24
-    const week = day *7
-    const month = day *30
-    
-    if(productDetail.comment.length>0){
-        productDetail.comment.forEach(newComment=>{
+    const min = 60 * 1000
+    const hour = 3600 * 1000
+    const day = 3600 * 1000 * 24
+    const week = day * 7
+    const month = day * 30
+
+    if (productDetail.comment.length > 0) {
+        productDetail.comment.forEach(newComment => {
             const t1 = newComment.datePost.getTime()
             const t2 = new Date().getTime()
             const diff = t2 - t1
-            if(diff<min&& diff>second){
-                const secondago = Math.floor(diff/second)
+            if (diff < min && diff > second) {
+                const secondago = Math.floor(diff / second)
                 newComment.datediff = secondago + ' giây trước'
             }
-            if(diff<hour&& diff>min){
-                const minago = Math.floor(diff/min)
+            if (diff < hour && diff > min) {
+                const minago = Math.floor(diff / min)
                 newComment.datediff = minago + ' phút trước'
             }
-            if(diff<day&& diff>hour){
-                const hourago = Math.floor(diff/hour)
+            if (diff < day && diff > hour) {
+                const hourago = Math.floor(diff / hour)
                 newComment.datediff = hourago + ' giờ trước'
             }
-            else if(diff<week&& diff>day){
-                const dayago = Math.floor(diff/day)
+            else if (diff < week && diff > day) {
+                const dayago = Math.floor(diff / day)
                 newComment.datediff = dayago + ' ngày trước'
             }
-            else if(diff<month&& diff>week){
-                const weeksago = Math.floor(diff/week)
-                newComment.datediff  = weeksago + ' tuần trước'
+            else if (diff < month && diff > week) {
+                const weeksago = Math.floor(diff / week)
+                newComment.datediff = weeksago + ' tuần trước'
             }
         })
-     
-    }
-    const product = await Product.findOne({_id:idProduct})
-    product.comment = productDetail.comment 
-    await product.save()
-   
 
-    res.render('productDetail',{productDetail:productDetail})
+    }
+    const product = await Product.findOne({ _id: idProduct })
+    product.comment = productDetail.comment
+    await product.save()
+
+
+    res.render('productDetail', { productDetail: productDetail })
 })
 
-router.get('/reduce/:title', function(req, res, next) {
+router.get('/reduce/:title', function (req, res, next) {
     var productId = req.params.title;
     cart.reduceByOne(productId);
     req.session.cart = cart;
@@ -517,7 +532,7 @@ router.get('/reduce/:title', function(req, res, next) {
     res.redirect('/shopping-cart');
 });
 
-router.get('/remove/:id', function(req, res, next) {
+router.get('/remove/:id', function (req, res, next) {
     var productId = req.params.id;
     // var cart = new Cart(req.session.cart ? req.session.cart : {});
 
@@ -526,81 +541,81 @@ router.get('/remove/:id', function(req, res, next) {
     req.session.save()
     res.redirect('/shopping-cart');
 });
-router.get('/saveDeliveryInfor',async function(req, res, next) {
+router.get('/saveDeliveryInfor', async function (req, res, next) {
     const id = req.query.id
     const realName = req.query.realName;
     const address = req.query.address;
     const phoneNumber = req.query.phoneNumber;
-   User.findOne({_id:id},async (err,result)=>{
-    result.realName = realName
-    result.address = address
-    result.phoneNumber = phoneNumber
-    await result.save()
-    res.json(result)
-   })
+    User.findOne({ _id: id }, async (err, result) => {
+        result.realName = realName
+        result.address = address
+        result.phoneNumber = phoneNumber
+        await result.save()
+        res.json(result)
+    })
 
 
 });
-router.get('/buySuccess',async function(req, res, next) {
+router.get('/buySuccess', async function (req, res, next) {
 
     res.json('buy success')
-  
+
 
 
 });
-router.get('/forgetPassword',(req,res)=>{
+router.get('/forgetPassword', (req, res) => {
     const messages = req.flash('notification');
-    res.render('forgetPassword',{messages:messages,hasErrors: messages.length > 0})
+    res.render('forgetPassword', { messages: messages, hasErrors: messages.length > 0 })
 })
-router.post('/forgetPassword',async(req,res)=>{
-    const {email} = req.body
-    const result = await User.findOne({username:email})
+router.post('/forgetPassword', async (req, res) => {
+    const { email } = req.body
+    const result = await User.findOne({ username: email })
     const secret = 'Secret Key'
-    if(result){
+    if (result) {
         const payload = {
             username: result.username,
-            id:result._id
+            id: result._id
         }
-        const token = jwt.sign(payload,secret)
+        const token = jwt.sign(payload, secret)
         result.token = token
         await result.save()
         const link = `http://localhost:3000/resetPassword/?token=${token}`
-        sendMail(email,link)
-        req.flash('notification',`Please check your email to get link reset your password`)
+        sendMail(email, link)
+        req.flash('notification', `Please check your email to get link reset your password`)
         res.redirect('/forgetPassword')
     }
-    else{
+    else {
         res.redirect('/forgetPassword')
     }
 
-    
-    
-    
+
+
+
 })
-router.get('/resetPassword',(req,res)=>{
+router.get('/resetPassword', (req, res) => {
     // const {token} = req.params
     const secret = 'Secret Key'
-    const {token} = req.query
- 
-    const decode = jwt.verify(token,secret)
-    if(decode){
+    const { token } = req.query
+
+    const decode = jwt.verify(token, secret)
+    if (decode) {
         res.render(`resetPassword`)
     }
-    else{
+    else {
         res.redirect('/forgetPassword')
     }
-    
+
 })
 
-router.post('/resetPassword',async (req,res)=>{
-    const {token} = req.query
-    const {password} = req.body
+router.post('/resetPassword', async (req, res) => {
+    const { token } = req.query
+    const { password } = req.body
     const secret = 'Secret Key'
 
- 
-    const decode = jwt.verify(token,secret)
-    if(decode){
-        const user = await User.findOne({_id:decode.id})
+
+    const decode = jwt.verify(token, secret)
+    if (decode) {
+        const user = await User.findOne({ _id: decode.id })
         const saltHash = genPassword(password);
 
         const salt = saltHash.salt;
@@ -608,20 +623,370 @@ router.post('/resetPassword',async (req,res)=>{
         user.hash = hash
         user.salt = salt
         await user.save()
-        req.flash('Change password success','You changed your password successful')
+        req.flash('Change password success', 'You changed your password successful')
         res.redirect('/login')
     }
-    else{
+    else {
         res.redirect('/forgetPassword')
     }
 
-    
+
 })
-router.get('/listProduct',(req,res)=>{
-    res.render('allProduct',{layout:'productLayout'})
-    
+router.get('/listProduct', (req, res) => {
+    res.render('allProduct', { layout: 'productLayout' })
+
+})
+router.get('/get-all', async (req, res) => {
+    try {
+        // const {salary} = req.body
+        // console.log(salary)
+        //   const pipeline = [
+        //     // {
+        //     //   $match: {
+        //     //     salary: { $lte: 5000 }
+        //     //   }
+        //     // },
+        //     {
+        //       $group: {
+        //         _id: '$country',
+        //         rs: { $avg: '$age' }
+        //       }
+        //     }
+        //   ];
+
+        const result = await client.db().collection('aggregation test').find().toArray();
+        console.log(result)
+        // or
+        //   const aggerationTest = mongoose.model('aggeration');
+
+        // Execute the aggregation pipeline
+        //   const result = await collection.aggregate(pipeline).toArray();
+        // or
+        // const result = await YourModel.aggregate(pipeline).exec();
+
+        res.json(result);
+    } catch (err) {
+        console.error('Error executing aggregation pipeline:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.get('/employee/:id', async (req, res) => {
+    const { id } = req.params
+    console.log(id)
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: { _id: id }
+        }
+    ]).toArray()
+    res.json(result)
 })
 
+router.get('/employeeC/:country', async (req, res) => {
+    const { country } = req.params
+    console.log(country)
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: { country: country }
+        }
+    ]).toArray()
+    console.log(result)
+    return res.json(result)
+})
+
+router.get('/employeeAge/:age', async (req, res) => {
+    const { age } = req.params
+    console.log(age)
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: { age: { $gt: parseInt(age) } }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employeeJob/:job1/:job2', async (req, res) => {
+    const { job1, job2 } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: {
+                $or: [{ profession: job1 }, { profession: job2 }]
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-salary/:order', async (req, res) => {
+    const { order } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $sort: {
+                salary: 1
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-start-letter/:letter', async (req, res) => {
+    const { letter } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: {
+                name: { $regex: `^${letter}` }
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-age-between/:from/:to', async (req, res) => {
+    const { from, to } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: {
+                age: { $gt: parseInt(from), $lt: parseInt(to) },
+                // age: {$lt : to}
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-not-from/:country', async (req, res) => {
+    let { country } = req.params
+    country = country.split(',')
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: {
+                country: {
+                    $nin:country
+                
+                },
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-not-in-job/:job1/:job2', async (req, res) => {
+    const { job1, job2 } = req.params
+
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match: {
+                $nor: [{ profession: job1 }, { profession: job2 }]
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee/age/:order', async (req, res) => {
+    const { order } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $sort:{
+                age : parseInt(order)
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-salary-larger/:salary', async (req, res) => {
+    const { salary } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            salary:{$gte:parseInt(salary)}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-end-letter/:letter', async (req, res) => {
+    const { letter } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            name:{$regex: `${letter}$`}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-by-country-age/:country/:age', async (req, res) => {
+    const { country,age } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            country: country,
+            age : {$lt:parseInt(age)}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-contain-word/:profession', async (req, res) => {
+    const { profession } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            profession: {$regex: `${profession}`}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-not-equal/:age', async (req, res) => {
+    const { age } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            age: {$ne: age}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-salary-between/:from/:to', async (req, res) => {
+    const { from,to } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            salary: {$gte: parseInt(from),$lte:parseInt(to)}
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-by-country-job/:country/:job', async (req, res) => {
+    const { country,job } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+         $match : {
+            profession: job,
+            country: country
+         }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-by-name-range/:from/:to', async (req, res) => {
+    const { from,to } = req.params
+    const start = from.charAt(0)
+    const end = to.charAt(0)
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match:{
+                name : {$regex:`^[${start}-${end}]`}
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-by-job-and-salary/:salary', async (req, res) => {
+    const { salary } = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            $match:{
+                $or : [{profession:'Doctor'},{profession:'Lawyer'}],
+                salary : {$gt : parseInt(salary)}
+
+            }
+        }
+    ]).toArray()
+    res.json(result)
+})
+
+router.get('/employee-larger-than-avg/', async (req, res) => {
+    const average = await client.db().collection('aggregation test').aggregate([
+        {
+            $group:{
+                _id: null,
+                avgAge : {$avg:'$age'}
+            }
+ 
+        }
+    ]).toArray()
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            
+            $match:{
+                age : {$gt : average[0].avgAge}
+
+            },
+ 
+        }
+    ]).toArray()
+    console.log(average)
+    res.json(result)
+})
+
+router.get('/employee-start-or-end-with-letter/:first/:second', async (req, res) => {
+    const {first,second} = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            
+            $match:{
+                $or : [{profession:{$regex:`^${first}`}},{profession:{$regex:`${second}$`}}]
+
+            },
+ 
+        }
+    ]).toArray()
+
+    res.json(result)
+})
+
+router.get('/employee-max-age/', async (req, res) => {
+    const max = await client.db().collection('aggregation test').aggregate([
+        {
+            $group:{
+                _id: null,
+                maxAge : {$max:'$age'}
+            }
+ 
+        }
+    ]).toArray()
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            
+            $match:{
+                age : max[0].maxAge
+
+            },
+ 
+        }
+    ]).toArray()
+
+    res.json(result)
+})
+
+router.get('/employee-start-and-end-with-letter/:first/:second', async (req, res) => {
+    const {first,second} = req.params
+    const result = await client.db().collection('aggregation test').aggregate([
+        {
+            
+            $match:{
+                name : {$regex: `^${first}.*${second}$`}
+            },
+ 
+        }
+    ]).toArray()
+
+    res.json(result)
+})
 
 
 module.exports = router;

@@ -1,0 +1,20 @@
+MongoDB is a NoSQL database that is document-oriented. NoSQL databases share many features with relational databases, and one of them is indexes. The question is how are such documents indexed in the database?
+
+Remember that because MongoDB is a database that writes JSONs, there is no predefined schema in the document. The same field can be a string or an integer – depending on the document.
+
+MongoDB, as well as other databases, use B-trees to index. With some exceptions, the algorithm is the same as a relational database.
+
+The B-tree can use integers and strings together to organize data. The most important thing to know is that an index-less database must read all the documents to filter what you want, while an indexed database can – through indexes – find the documents quickly. Imagine you are looking for a book in a disorganized library. This is how the query optimizer feels when we are looking for something that is not indexed.
+
+There are several different types of indexes available: single field, compound indexes, hashed indexes, geoIndexes, unique, sparse, partial, text… and so on. All of them help the database in some way, although they obviously also get in the way of write performance if used too much.
+
+Single fields. Single fields are simple indexes that index only one field in a collection. MongoDB can usually only use one index per query, but in some cases the database can take advantage of more than one index to reply to a query (this is called index intersection). Also, $or actually executes more than one query at a time. Therefore $or and $in can also use more than one index.
+Compound indexes. Compound indexes are indexes that have more than one indexed field, so ideally the most restrictive field should be to the left of the B-tree. If you want to index by sex and birth, for instance, the index should begin by birth as it is much more restrictive than sex.
+Hashed indexes. Shards use hashed indexes, and create a hash according to the field value to spread the writes across the sharded instances.
+GeoIndexes. GeoIndexes are a special index type that allows a search based on location, distance from a point and many other different features.
+Unique indexes. Unique indexes work as in relational databases. They guarantee that the value doesn’t repeat and raise an error when we try to insert a duplicated value. Unique doesn’t work across shards.
+Text indexes. Text indexes can work better with indexes than a single indexed field. There are different flags we can use, like giving weights to control the results or using different collections.
+Sparse/Partial indexes. Sparse and partial indexes seem very similar. However, sparse indexes will index only an existing field and not check its value, while partial indexes will apply a filter (like greater than) to a field to index. This means the partial index doesn’t index all the documents with the existing field, but only documents that match the create index filter.
+We will discuss and talk more about indexes and how they work in my webinar MongoDB® Index Types: How, When and Where Should They Be Used? If you have questions, feel free to ask them in the comments below and I will try to answer all of them in the webinar (or in a complementary post).
+
+I hope this blog post was useful, please feel free to reach out me on twitter @AdamoTonete or @percona.
